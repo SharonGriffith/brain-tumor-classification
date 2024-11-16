@@ -78,16 +78,53 @@ img_size = (299,299)
 image_generator = ImageDataGenerator(rescale=1/255, brightness_range=(0.8, 1.2))
 ts_gen = ImageDataGenerator(rescale=1/255)
 
-tr_gen = image_generator.flow_from_dataframe(tr_df, x_col='Class Path',
+tr_gen = image_generator.flow_from_dataframe(tr_df,
+                                             x_col='Class Path',
                                              y_col='Class',
                                              batch_size=batch_size,
-                                             target_size=img_size)
+                                             target_size=img_size,
+                                             validate_filenames=False)
 
-valid_gen = image_generator.flow_from_dataframe(valid_df, x_col='Class Path',
-                                             y_col='Class',
-                                             batch_size=batch_size,
-                                             target_size=img_size)
+valid_gen = image_generator.flow_from_dataframe(valid_df,
+                                                x_col='Class Path',
+                                                y_col='Class',
+                                                batch_size=batch_size,
+                                                target_size=img_size,
+                                                validate_filenames=False)
 
-ts_gen = ts_gen.flow_from_dataframe(ts_df, x_col='Class Path',
-                                             y_col='Class',
-                                             batch_size=16, shuffle=False)
+ts_gen = ts_gen.flow_from_dataframe(ts_df,
+                                    x_col='Class Path',
+                                    y_col='Class',
+                                    batch_size=16,
+                                    shuffle=False,
+                                    validate_filenames=False)
+
+plt.figure(figsize=(20, 20))
+for i in range(16):
+  plt.subplot(4, 4, i+1)
+  try:
+    batch = next(tr_gen)
+  except:
+    continue
+
+  image = batch[0][0]
+  label = batch[1][0]
+  plt.imshow(image)
+
+  # Get the class index
+  class_index = np.argmax(label)
+
+  # Get the list of class names and class indices
+  class_names = list(tr_gen.class_indices.keys())
+  class_indices = list(tr_gen.class_indices.values())
+
+  # Find the index of the class_index in the list of indices
+  index_position = class_indices.index(class_index)
+
+  # Get the class name using the index position
+  class_name = class_names[index_position]
+
+  plt.title(f"Class: {class_name}")
+  plt.axis('off')
+plt.tight_layout()
+plt.show()
