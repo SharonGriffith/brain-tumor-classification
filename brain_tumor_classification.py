@@ -13,6 +13,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+
 !kaggle datasets download -d masoudnickparvar/brain-tumor-mri-dataset --unzip
 
 def get_class_paths(path):
@@ -57,8 +59,35 @@ plt.figure(figsize=(15,7))
 ax = sns.countplot(data=ts_df, x=ts_df['Class'])
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matriximport tensorflow as tf
+from sklearn.metrics import classification_report, confusion_matrix
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten
+from tensorflow.keras.optimizers import Adamax
 from tensorflow.keras.metrics import Precision, Recall
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+valid_df, ts_df = train_test_split(ts_df, train_size=0.5, stratify=ts_df['Class'])
+
+valid_df
+
+ts_df
+
+batch_size = 32
+img_size = (299,299)
+image_generator = ImageDataGenerator(rescale=1/255, brightness_range=(0.8, 1.2))
+ts_gen = ImageDataGenerator(rescale=1/255)
+
+tr_gen = image_generator.flow_from_dataframe(tr_df, x_col='Class Path',
+                                             y_col='Class',
+                                             batch_size=batch_size,
+                                             target_size=img_size)
+
+valid_gen = image_generator.flow_from_dataframe(valid_df, x_col='Class Path',
+                                             y_col='Class',
+                                             batch_size=batch_size,
+                                             target_size=img_size)
+
+ts_gen = ts_gen.flow_from_dataframe(ts_df, x_col='Class Path',
+                                             y_col='Class',
+                                             batch_size=16, shuffle=False)
